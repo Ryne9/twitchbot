@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+    <title>flock</title>
+    <style>
+    </style>
+</head>
+<body>
+
+<div>
+    <canvas id="app"></canvas>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+<script>
+    let counter1 = 0,
+        counter2 = 0;
+    let sushilit = new Image();
+    sushilit.src = 'sushilit.png';
+    let sushisad = new Image();
+    sushisad.src = 'sushisad.png';
+    let canvas = document.getElementById('app');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let ctx = canvas.getContext('2d');
+    ctx.font = '7em "Arial Black", Gadget, sans-serif';
+    let width = Math.floor(window.innerWidth / 10);
+    let height = Math.floor(window.innerHeight / 10);
+
+    let options = {
+        poll: {
+            display: true,
+            label1: "Sushi",
+            label2: "Guest"
+        }
+    };
+
+    (function () {
+        let socket = io();
+        socket.on('chat message', function(msg){
+
+
+            if (msg.msg.startsWith('1')) {
+                counter1++;
+                // console.log(`drew: x: ${width * 2} y: ${height * 4}`);
+            }
+            if (msg.msg.startsWith('2')) {
+                counter2++;
+                // console.log(`drew: x: ${width * 7} y: ${height * 4}`);
+            }
+            if (msg.mod) {
+                if (msg.msg.slice(0, 6) === 'label1') {
+                    options.poll.label1 = msg.msg.slice(7, msg.msg.length);
+                }
+                if (msg.msg.slice(0, 6) === 'label2') {
+                    options.poll.label2 = msg.msg.slice(7, msg.msg.length);
+                }
+                if (msg.msg === 'reset') {
+                    counter1 = 0;
+                    counter2 = 0;
+                }
+                if (msg.msg === 'hide') {
+                    options.poll.display = false;
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                }
+                if (msg.msg === 'show') {
+                    options.poll.display = true;
+                }
+                // console.log(`counter1: ${counter1} counter2: ${counter2}`);
+            }
+
+            if (options.poll.display) {
+                renderPoll();
+            }
+        });
+    })();
+
+    function renderPoll() {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.fillStyle = 'orange';
+
+        let difference = (counter1 - counter2) * 2;
+        ctx.drawImage(sushilit, width * 2 - difference, height * 4, width + difference, width + difference);
+        ctx.drawImage(sushisad, width * 7, height * 4, width - difference, width - difference);
+
+        let xoffset = ctx.measureText(String(counter2));
+        let halfLabel1 = ctx.measureText(options.poll.label1);
+        let halfLabel2 = ctx.measureText(options.poll.label2);
+
+        ctx.fillText(String(counter1), width * 3, height * 5);
+        ctx.fillText(String(counter2), width * 7 - xoffset.width, height * 5);
+        ctx.fillText(options.poll.label1, width * 3 - halfLabel1.width / 2, height * 3);
+        ctx.fillText(options.poll.label2, width * 7 - halfLabel2.width / 2, height * 3);
+    }
+
+    /**
+     * Prod preferred
+     */
+    // let counter1 = {},
+    //     counter2 = {};
+
+    // $(function () {
+    //     let socket = io();
+    //     socket.on('chat message', function(msg){
+    // if (msg.msg === '1') {
+    //     counter1[msg.username] = 0;
+    //     delete counter2[msg.username];
+    // ctx.drawImage(sushilit, width * 2, height * 4, width, width);
+
+    // }
+    // if (msg.msg === '2') {
+    //     counter2[msg.username] = 0;
+    //      delete counter1[msg.username];
+    // ctx.drawImage(sushisad, width * 7, height * 4, width, width);
+
+    // }
+    // if (msg.mod) {
+    // if (msg.msg === 'reset') {
+    //     counter1 = {};
+    //     counter2 = {};
+    // }
+    //         }
+    //     });
+    // });
+
+</script>
+</body>
+</html>
